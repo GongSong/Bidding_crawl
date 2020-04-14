@@ -70,12 +70,12 @@ class ReceiveMessage(BaseRabbitMQ):
         try:
             url = 'https://restapi.amap.com/v3/geocode/regeo?key=' + key + '&location=' + str(Lng) + ',' + str(Lat) + '&poitype=&radius=1000&extensions=base&batch=false&roadlevel=1'            
             req = rq.get(url)
-            dataDic = json.loads(req.text)   
+            dataDic = json.loads(req.text)
             address = ''
             businessaddress = ''
-            if int(dataDic['status']) == 1:        
+            if int(dataDic['status']) == 1:
                 baseaddress = str(dataDic['regeocode']['formatted_address'])  #基础地址
-                if 'addressComponent' in dataDic['regeocode']:                    
+                if 'addressComponent' in dataDic['regeocode']:
                     if 'businessAreas' in dataDic['regeocode']['addressComponent']:                        
                         if len(dataDic['regeocode']['addressComponent']['businessAreas']) > 0:                                               
                             result = dataDic['regeocode']['addressComponent']['businessAreas'][0]                                                                                    

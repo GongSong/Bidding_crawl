@@ -8,17 +8,20 @@ from StoreInfo.StoreSellScore import GetStoreName
 from Operate.SwitchingPosition import SwithPosition
 from Operate.SearchDrug import SearchDrugPage
 from Product import ProductInfo
+import time
 
 def SearchCatchStore(storeId:str,poco,device,DeviceNum:str,DeviceType:int):
     #查找到该门店的相关信息
     AllClassifyInputClickNum = 0#大类进入点击小类的次数
     IsAllClassifyInput = False #是否从大类搜索进入(默认不是)
     DbContext = DbHelper()
+
     result = DbContext.GetStorePoint(storeId)
     if len(result) == 1:
         StoreAddress = result[0]['address']
         StoreName = result[0]['shopName']
         StoreCity = result[0]['City']
+       
         IsAddress = SwithPosition(poco,StoreAddress,StoreCity,0)#切换定位
         if not IsAddress:
             return False
@@ -39,7 +42,21 @@ def SearchCatchStore(storeId:str,poco,device,DeviceNum:str,DeviceType:int):
             print(DeviceNum)
             print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~o(╥﹏╥)o 第一个定位点无送药上门f o(╥﹏╥)o~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             IsAddress = False
-            pass    
+            pass   
+        poco("com.sankuai.meituan.takeoutnew:id/action_search").click()
+        time.sleep(1) #睡眠一段时间等待页面加载
+        poco("com.sankuai.meituan.takeoutnew:id/txt_search_keyword").click()
+        poco("com.sankuai.meituan.takeoutnew:id/txt_search_keyword").set_text(StoreName)
+        poco("com.sankuai.meituan.takeoutnew:id/search_tv").click() 
+        time.sleep(3) #睡眠一段时间等待页面加载
+        storeNames = poco("com.sankuai.meituan.takeoutnew:id/list_poiSearch_poiList").child("android.widget.LinearLayout")
+        for sName in storeNames:
+            if DealStoreName(sName.offspring("com.sankuai.meituan.takeoutnew:id/textview_poi_name").get_text())==DealStoreName(StoreName):
+                #找到要爬取的门店,继续商品信息
+                sName.wait(waitTime).click()                            
+                CatchProductResult = ProductInfo.GetProduct(poco,device,storeId)
+
+        return 
         swipeNume= 0
         #第一次大幅度滑动
         if DeviceType == 1:            

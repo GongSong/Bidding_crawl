@@ -70,7 +70,7 @@ class DbBase:
             return self._conn.commit()
         except Exception as e:
             self._conn.rollback()
-            print('执行sql语句出错：' + sqlstr)   
+            print('执行sql语句出错：' + sqlstr+" "+repr(e))   
     
     #执行指定的更新语句
     def Update(self,sqlstr : str):

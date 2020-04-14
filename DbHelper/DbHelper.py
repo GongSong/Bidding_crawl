@@ -67,6 +67,7 @@ class DbHelper(DbBase):
                 pass
             else:
                 print('新增数据异常'+repr(e))
+                mtWmPoiId =''
                 self._conn.rollback()   
         return mtWmPoiId          
     
@@ -95,7 +96,7 @@ class DbHelper(DbBase):
             except Exception as e:
                 print('更新数据异常'+repr(e))
                 self._conn.rollback()   
-                return True,'',''
+                return False,'',''
             return False,address,mtWmPoiId
         pass
     
@@ -211,6 +212,30 @@ class DbHelper(DbBase):
             print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~o(╥﹏╥)o 获取目标城市失败 o(╥﹏╥)o~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')   
             print(repr(e))            
         return result
+
+    #获取最近一条执行了但是没有回写队列的任务执行时间
+    def getLateTaskTime(self):
+        taskListTime =[]
+        sql = """
+        select t.ExcuteTime 
+        from task t 
+        where t.IsExcute = 1 OR t.IsExcute = 2 
+        order by ExcuteTime desc limit 0,1;
+        """
+        taskListTime = self.Query(sql)
+        return taskListTime
+    
+    #把所有task表里中断的任务重启(一个小时还没有爬完的任务)
+    def rebootTask(self):
+        sql = """
+        UPDATE task t 
+        SET 
+        t.IsExcute = 0
+        WHERE
+        (t.IsExcute = 1 OR t.IsExcute = 2) and ExcuteTime<SUBDATE(now(),interval 60 minute); 
+        """
+        self.Update(sql)
+        pass
 
     #按照模式3获取设备的任务(即按照基础库数据更新)
     def GetDeviceTaskByMode3(self):

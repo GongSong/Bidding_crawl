@@ -133,7 +133,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                             if storeName in StoreList:
                                 continue 
                             else:
-                                if '成人用品' in storeName:#成人用品店不抓取,干扰太大
+                                if '成人用品' in storeName or '情趣' in storeName:#成人用品店不抓取,干扰太大
                                     continue
                                 StoreList.append(storeName)      
                                 storeInfo['Name'] = storeName                          
@@ -168,7 +168,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                             storeInfo['OriginAddress'] = addressinfo
                             storeInfo['Id'] = mtWmPoiId                                                                
                         print(storeName + '  【' +str(Sell) +'】  【评分】:' + str(Score) + ' 【地址】:' + storeAddress + '\n')
-                        if FaileAddress not in storeInfo['OriginAddress']:
+                        if FaileAddress not in storeInfo['OriginAddress'] and len(storeInfo['Id']) !=0:
                             storeInfo['OriginAddress'] = str(storeInfo['OriginAddress']).replace(u'\xa0', u' ')
                             currentTaskResult.append(storeInfo)
                         ''' 药品信息
