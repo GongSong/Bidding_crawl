@@ -8,9 +8,9 @@ from CommonPackage.GlobalParameter import waitTime,FaileAddress,FaileAddresstagL
 
 def GetStoreInfo(poco,DbContext,DeviceNum):  
     storeAddress = FaileAddress
-    NoShopInfoNum = 0    
+    NoShopInfoNum = 0
     notAddressList = DbContext.GetFilterKeyword()
-    device = Android(DeviceNum) 
+    # device = Android(DeviceNum) 
 
     while True:            
         try:
@@ -62,12 +62,12 @@ def GetStoreInfo(poco,DbContext,DeviceNum):
                             time.sleep(1)
                             continue
                         else:
-                            device.adb.start_cmd("adb shell")
-                            device.adb.start_cmd("su")
-                            device.adb.start_cmd("wipe cache")
-                            device.adb.start_cmd("exit")
-                            device.adb.start_cmd("exit")
-                            device.adb.start_cmd("adb reboot")
+                            # device.adb.start_cmd("adb shell")
+                            # device.adb.start_cmd("su")
+                            # device.adb.start_cmd("wipe cache")
+                            # device.adb.start_cmd("exit")
+                            # device.adb.start_cmd("exit")
+                            # device.adb.start_cmd("adb reboot")
                             print('~~~~~~~~~~~~~~~~~~~~~~~~超过10次没有获取到地址信息 自动返回~~~~~~~~~~~~~~~~~~~~~~~~')
                             break #超过五次不在重试
                 pass                

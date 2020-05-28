@@ -117,7 +117,9 @@ class ReceiveMessage(BaseRabbitMQ):
     def __callback(self,ch, method, properties, body):
         try:                        
             receiveMsg = str(body,encoding="utf-8")            
-            receiveMsgDict = json.loads(DecodeText(receiveMsg))                       
+            receiveMsgDict = json.loads(DecodeText(receiveMsg))   
+            #在这里判断任务消息类型，门店信息任务，门店商品任务
+            # 当前只有一种门店信息任务，未判断                    
             Id = receiveMsgDict['Id']
             if receiveMsgDict['StoreId'] == None:
                 StoreId = ''
@@ -135,7 +137,7 @@ class ReceiveMessage(BaseRabbitMQ):
             if receiveMsgDict['Address'] != None and receiveMsgDict['Address'] != '':
                 Address = str(receiveMsgDict['Address']).replace("|","")
             else:
-                if '0.0' in str(Lng) or '0.0' in str(Lat):  
+                if '0.0' in str(Lng) or '0.0' in str(Lat): 
                     errorResult = self.__ErrorReturn(receiveMsgDict)
                     producer = SendMessage()
                     if ch.is_open:

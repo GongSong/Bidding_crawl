@@ -3,6 +3,7 @@ import sys
 import datetime
 from Entity.EntityBase import EntityBase
 import uuid
+import hashlib
 
 #日志
 class loginfo(EntityBase):
@@ -47,8 +48,10 @@ class shop(EntityBase):
                     Lng:str = None,
                     Lat:str = None,                
                     AnchorPoint:str = None,
-                    Genhash:str = None):        
-        self.mtWmPoiId = str(uuid.uuid1()).replace("-","")
+                    Genhash:str = None):       
+        data = City.replace(' ','')+shopname.replace(' ','')
+        self.mtWmPoiId = hashlib.md5(data.encode(encoding='UTF-8')).hexdigest()
+        # self.mtWmPoiId = str(uuid.uuid1()).replace("-","")
         self.shopName = shopname
         self.wmPoiScore = wmPoiScore
         self.SellNum = SellNum

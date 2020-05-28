@@ -39,6 +39,7 @@ while AllowRun:
                 else:
                     continue
             if isRunning:
+                
                 break
         except psutil.NoSuchProcess:
             pass    
@@ -55,7 +56,9 @@ while AllowRun:
         elif mode == 3:
             taskList = DbContext.GetDeviceTaskByMode3()    
         elif mode == 5:
-            taskList = []          
+            taskList = []   
+        elif mode == 6:
+            taskList =[]       
         if len(taskList) > 0:
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Reatarting~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')                       
             try:

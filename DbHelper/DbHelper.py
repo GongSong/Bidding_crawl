@@ -241,6 +241,13 @@ class DbHelper(DbBase):
     def GetDeviceTaskByMode3(self):
         return self.GetDeviceTaskByMode2('TaskBase')        
 
+
+    #模式6(爬取门店商品)
+    def GetDeviceTaskByMode6(self):
+        
+        pass
+
+
     #获取有待执行任务的设备
     def GetHasTaskDevice(self):
         deviceList = []
@@ -355,7 +362,7 @@ class DbHelper(DbBase):
 #==================================门店商品爬虫相关==================================#
     def GetStorePoint(self,StoreId:str):
         sql = """
-            select s.shopName,s.City,s.address
+            select s.shopName,s.City,s.AnchorPoint
             from shop s
             where s.mtWmPoiId = '%s'
         """ % (StoreId)
