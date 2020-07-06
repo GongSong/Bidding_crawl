@@ -114,7 +114,15 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                         #销量、评分
                         Sell = '0'
                         Score = '评分未知'                      
-
+                        # time_ScoreUI = storeNameResult[1].child("android.widget.LinearLayout")
+                        # try:
+                        #     time = time_ScoreUI.offspring("com.sankuai.meituan.takeoutnew:id/txt_mt_delivery_time_info").exists()
+                        #     #如果配送时间不存在就是快递店就不爬
+                        #     if not time:
+                        #         print("-------------快递店不爬【"+storeName+"】---------------")   
+                        #         continue
+                        # except PocoNoSuchNodeException:
+                        #     print("-------------獲取配送時間異常---------------")      
                         storeSellResult = GetStoreSell(storeNameResult[1])
                         if not storeSellResult[0]:                            
                             continue
@@ -146,7 +154,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                                 storeInfo['Phone'] = ''
                                 storeInfo['Brand'] = ''
                                 storeInfo['Created'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
-                            IsClickStore,addressinfo,mtWmPoiId = DbContext.GetStoreInfo(storeName,str(Score),str(Sell).replace("月售","").replace("+","").replace("件",""),addressGenhash)
+                            IsClickStore,addressinfo,mtWmPoiId = DbContext.GetStoreInfo(storeName,str(Score),str(Sell).replace("月售","").replace("+","").replace("件",""),addressGenhash,TargetCity)
                         #继续爬取门店地址                           
                         if IsClickStore:            
                             #根据店名+城市找地址                  
@@ -245,7 +253,11 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                         break     
                     else:
                         AllClassifyInputClickNum += 1
-                        continue                             
+                        continue
+                #跳到登录界面需要退出
+                if poco(text = '获取短信验证码').exists():    
+                    device.keyevent("4")
+                    continue                         
                 storelenNum += 1
                 if storelenNum > 5:
                     print('【因为获取门店列表长度为0而结束本次定位查询】')

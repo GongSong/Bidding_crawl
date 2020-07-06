@@ -65,7 +65,8 @@ while AllowRun:
                 path = '/root/airtest/log/Device/' + datetime.datetime.now().strftime("%Y%m%d") + '/'
                 if not os.path.exists(path):
                     os.mkdir(path)
-                os.popen('python3.7 '+ DeviceNum +'.py &>> '+ path + DeviceNum + '.log')
+                if  os.path.exists('/root/airtest/'+DeviceNum+'.py'):  
+                    os.popen('python3.7 '+ DeviceNum +'.py &>> '+ path + DeviceNum + '.log')
             except Exception as e:            
                 print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~o(╥﹏╥)o 重启程序异常 o(╥﹏╥)o~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')                
                 if RestartExcepNum > 20:

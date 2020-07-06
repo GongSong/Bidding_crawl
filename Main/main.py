@@ -27,10 +27,10 @@ def main(DeviceNum):
         DbContext = DbHelper()
         DeviceType = 0
         device = Android(DeviceNum)
-        device.adb.start_shell("su")
-        device.adb.start_shell("wipe data")
-        device.adb.start_shell("wipe cache")
-        device.adb.start_cmd("adb reboot")
+        # device.adb.start_shell("su")
+        # device.adb.start_shell("wipe data")
+        # device.adb.start_shell("wipe cache")
+        # device.adb.start_cmd("adb reboot")
 
         if '0123456789ABCDEF' not in DeviceNum:
             device.wake()  # 唤醒页面
@@ -85,17 +85,31 @@ def main(DeviceNum):
             elif mode == 5:
                 IsRunning = False
             elif mode == 6:
-                storeId = ''
-                if(DeviceNum == "APU0215B25001477"):
-                    storeId = "e8835208845f11ea876e00e04c680875"
-                elif(DeviceNum == "APU0216111008105"):
-                    storeId = "c26de4ca845f11eab16b00e04c680875"
+                storeId = []
+                if(DeviceNum == "0123456789ABCDEF"):
+                    # storeId2 = "19b15290305911ea886a005056c00008"
+                    storeId6 = "2e89aa4e39a711eaad6c00e04c680875"
+                    # SearchCatchStore(storeId5,
+                    #                  poco, device, DeviceNum, DeviceType)
+                    # BackHomePage(
+                    #     poco, DbContext, DeviceNum, device)  # 返回首页
+                    SearchCatchStore(storeId6,
+                                     poco, device, DeviceNum, DeviceType)
+                    BackHomePage(
+                        poco, DbContext, DeviceNum, device)  # 返回首页
+                elif(DeviceNum == "E4J4C17405011422"):
+                    storeId = "aee3b0708bc011ea8ecf00e04c680875"
                 elif(DeviceNum == "APU0216530000778"):
                     storeId = "d89e35ec845f11ea802b00e04c680875"
-                
-                if(storeId != ""):
+                elif(DeviceNum == 'APU0215C11003517'):
+                    # [以岭]人参片100g
+                    storeId = "96c26e8c305a11ea9505005056c00008"
                     SearchCatchStore(storeId,
-                                 poco, device, DeviceNum, DeviceType)
+                                     poco, device, DeviceNum, DeviceType)
+                # if(storeId != ""):
+                #     for idsd in storeId:
+                #         SearchCatchStore(idsd,
+                #                  poco, device, DeviceNum, DeviceType)
             if(len(taskList) == 1):
                 # 更新任务为运行中
                 DbContext.UpdateTaskStatus(
@@ -151,15 +165,6 @@ def main(DeviceNum):
                             '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~O(∩_∩)O 紧急置停 O(∩_∩)O~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                         break
                     if len(taskList) > 0:
-                        lateTaskTime = DbContext.getLateTaskTime()
-                        lateTime = lateTaskTime[0]["ExcuteTime"]
-                        newTime = datetime.datetime.now()
-                        # 每次任务执行完后检查一下是否有中断的任务，并重启中断的任务
-                        if(((newTime - lateTime).seconds)/60 > 60 or (newTime - lateTime).days > 0):
-                            print("最后执行的任务执行了"+str((newTime - lateTime).days) +
-                                  "天"+str(((newTime - lateTime).seconds)/60)+"分钟还没完成")
-                            # 把意外中断的任务重启
-                            DbContext.rebootTask()
                         print(
                             '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~O(∩_∩)O 抽取一条任务 O(∩_∩)O~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                     else:

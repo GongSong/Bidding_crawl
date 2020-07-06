@@ -31,7 +31,15 @@ def BackHomePage(poco,DbContext,DeviceNum,device):
                 poco("com.sankuai.meituan.takeoutnew:id/left_action_view").wait(waitTime).click()
                 print('切换地址页面返回')
                 continue
-            #已知未处理的1种情况应用无响应状态重启应用
+            #荣耀系统应用无响应状态关闭应用
+            if poco("android:id/aerr_close").exists():
+                poco("android:id/aerr_close").click()
+                continue
+            #华为mate8系统应用无响应状态关闭应用
+            if(poco(text = '“美团外卖”无响应。是否将其关闭？').exists()):
+                if(poco("android:id/button1").exists()):
+                    poco("android:id/button1").click()
+                continue
             #手机有更新时取消更新,第一步
             if poco("android:id/button3").exists():
                 poco("android:id/button3").click()

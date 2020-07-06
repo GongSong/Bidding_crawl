@@ -23,6 +23,7 @@ def GetStoreInfo(poco,DbContext,DeviceNum):
             if poco(text="商家详情").exists():        
                 poco(text="商家详情").click()                        
                 ExceptionNum = 0
+                time.sleep(1)
                 while True:
                     try:                        
                         #view = poco("android.widget.LinearLayout").offspring("android.widget.LinearLayout").child("android.widget.FrameLayout").child("android.widget.FrameLayout").child("android.view.ViewGroup").child("android.view.ViewGroup").offspring("android.support.v4.view.ViewPager").offspring("android.widget.ScrollView").child("android.view.ViewGroup").child("android.view.ViewGroup")[0].child("android.view.ViewGroup").wait(waitTime)                        
@@ -94,6 +95,7 @@ def GetStoreInfo(poco,DbContext,DeviceNum):
                     break                   
         except Exception as e:
             DbContext.AddLog(DeviceNum,3,'设备['+ DeviceNum +']爬取门店地址异常：' + repr(e))
+            break
     pass
     return storeAddress
     

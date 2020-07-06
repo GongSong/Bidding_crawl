@@ -50,8 +50,8 @@ class shop(EntityBase):
                     AnchorPoint:str = None,
                     Genhash:str = None):       
         data = City.replace(' ','')+shopname.replace(' ','')
-        self.mtWmPoiId = hashlib.md5(data.encode(encoding='UTF-8')).hexdigest()
-        # self.mtWmPoiId = str(uuid.uuid1()).replace("-","")
+        # self.mtWmPoiId = hashlib.md5(data.encode(encoding='UTF-8')).hexdigest()
+        self.mtWmPoiId = str(uuid.uuid1()).replace("-","")
         self.shopName = shopname
         self.wmPoiScore = wmPoiScore
         self.SellNum = SellNum

@@ -10,7 +10,8 @@ from DbHelper.DbHelper import DbHelper
 
 #获取商品
 def GetProduct(poco,device,storeId):
-    poco("com.sankuai.meituan.takeoutnew:id/category_recycler_view").swipe([-0.8,0],duration = 0.5)
+    if( poco("com.sankuai.meituan.takeoutnew:id/category_recycler_view").exists()):
+        poco("com.sankuai.meituan.takeoutnew:id/category_recycler_view").swipe([-0.8,0],duration = 0.5)
     time.sleep(3) #睡眠一段时间等待页面加载
    
 
@@ -49,6 +50,7 @@ def GetProduct(poco,device,storeId):
             if nextCategary:
                 time.sleep(1)     
                 nextCategary = False'''
+            time.sleep(1)
             CurrentClassfiy = poco("com.sankuai.meituan.takeoutnew:id/layout_shop_root_scroll_container").offspring("com.sankuai.meituan.takeoutnew:id/priority_scrollview").offspring("com.sankuai.meituan.takeoutnew:id/poi_pinned_layout").child("android.support.v7.widget.RecyclerView").child("android.widget.FrameLayout")
             if(len(CurrentClassfiy)==0):
                 CurrentClassfiy = poco("com.sankuai.meituan.takeoutnew:id/recycler").offspring("com.sankuai.meituan.takeoutnew:id/ll_stickyfoodList_adapter_food_food")
@@ -138,9 +140,9 @@ def GetProduct(poco,device,storeId):
                         DeviceType = 1   
                    
                     if DeviceType == 1: 
-                        poco.swipe([0.5,0.8],[0.5,0.2],duration = 0.1)
+                        poco.swipe([0.5,0.8],[0.5,0.2],duration = 0.2)
                     else:            
-                        poco.swipe([0.5,0.8],[0.5,0.2],duration = 0.1)
+                        poco.swipe([0.5,0.8],[0.5,0.3],duration = 0.4)
                     
             pass
         except PocoNoSuchNodeException:

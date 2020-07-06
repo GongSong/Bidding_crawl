@@ -1,7 +1,10 @@
 from RabbitMQ.Consumer import ReceiveMessage
 from DbHelper.DbHelper import DbHelper
+import datetime
+import os
 
 def main():
+    os.popen('python3.7 DaemonTask.py  &>> /root/airtest/log/TaskRunniglog'+ datetime.datetime.now().strftime("%Y%m%d") +'.log')
     while True:
         try:
             consumer = ReceiveMessage()

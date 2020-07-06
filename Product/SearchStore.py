@@ -19,7 +19,8 @@ def SearchCatchStore(storeId:str,poco,device,DeviceNum:str,DeviceType:int):
     result = DbContext.GetStorePoint(storeId)
     if len(result) == 1:
         #address字段可能找不到这个店，用AnchorPoint才能找到这个店
-        StoreAddress = result[0]['AnchorPoint']
+        strs =str(result[0]['AnchorPoint']).split(';')
+        StoreAddress =strs[0]
         StoreName = result[0]['shopName']
         StoreCity = result[0]['City']
        
