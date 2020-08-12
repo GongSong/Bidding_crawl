@@ -2,40 +2,46 @@
 from poco.proxy import UIObjectProxy
 from poco.exceptions import PocoNoSuchNodeException
 import time
-from CommonPackage.GlobalParameter import waitTime,FaileAddress
+from CommonPackage.GlobalParameter import waitTime, FaileAddress
 from Operate.SwitchingPosition import SwithPosition
 from DbHelper.DbHelper import DbHelper
 from StoreInfo.StoreInfo import GetStoreInfo
-from StoreInfo.StoreSellScore import GetStoreScore,GetStoreSell,GetStoreName
+from StoreInfo.StoreSellScore import GetStoreScore, GetStoreSell, GetStoreName
 from Operate.SearchDrug import SearchDrugPage
 from Operate.CloseUpdate import CloseUpDateInfo
 from Product import ProductInfo
 import datetime
 
-def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,device):
+
+def StartCapture(poco, AllPosition, DeviceType, TargetCity, DeviceNum, cityCode, device):
     CloseUpDateInfo(poco)
-    IsAllClassifyInput = False #是否从大类搜索进入(默认不是)
-    AllClassifyInputClickNum = 0#大类进入点击小类的次数
-    currentTaskResult = []#存放本次任务抓取的门店信息
-    if poco(text = "美团外卖").exists():
-        poco(text = "美团外卖").click()  
+    IsAllClassifyInput = False  # 是否从大类搜索进入(默认不是)
+    AllClassifyInputClickNum = 0  # 大类进入点击小类的次数
+    currentTaskResult = []  # 存放本次任务抓取的门店信息
+    if poco(text="美团外卖").exists():
+        poco(text="美团外卖").click()
     if DeviceNum == 'E4J4C17405011422':
-        poco.swipe([0.5,0.5],[0.5,0.6],duration = 0.3)        
-    IsAddress = SwithPosition(poco,AllPosition[0]['RepresentativeAdress'],TargetCity,0)#第一次切换定位    
+        poco.swipe([0.5, 0.5], [0.5, 0.6], duration=0.3)
+    IsAddress = SwithPosition(
+        poco, AllPosition[0]['RepresentativeAdress'], TargetCity, 0)  # 第一次切换定位
     if not IsAddress:
-        return currentTaskResult,False
+        return currentTaskResult, False
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     try:
-        if poco(text="送药上门").exists():                
-            poco(text="送药上门").wait(waitTime).click([0,0])      
+        if poco(text="送药上门").exists():
+            poco(text="送药上门").wait(waitTime).click([0, 0])
         else:
             if DeviceNum == 'E4J4C17405011422':
-                poco.swipe([0.5,0.6],[0.5,0.5],duration = 0.3)
-            result = SearchDrugPage(poco,device,DeviceNum)
+                poco.swipe([0.5, 0.6], [0.5, 0.5], duration=0.3)
+            result = SearchDrugPage(poco, device, DeviceNum)
             if not result:
                 print(DeviceNum)
-                print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~o(╥﹏╥)o 第一个定位点无送药上门 o(╥﹏╥)o~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                IsAddress = False
+                if poco(text="美食").exists():
+                    IsAddress = False
+                    print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~o(╥﹏╥)o 第一个定位点无送药上门 o(╥﹏╥)o~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+                else:
+                    print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~o(╥﹏╥)o 被反爬检测到了 o(╥﹏╥)o~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+                    return currentTaskResult,True
             else:
                 IsAllClassifyInput = True                
     except PocoNoSuchNodeException:
@@ -50,7 +56,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
         address = addressDic['RepresentativeAdress']#标志性坐标点
         addressGenhash = addressDic['Genhash'] #地理散列值        
         print('===========================【'+ DeviceNum +'】抓取【' + address + '】开始===========================')    
-        #第一次进来不需要切换定位
+        # 第一次进来不需要切换定位
         if SwitchNum > 0:
             StoreList.clear()#切换一次地址就将列表清空
             IsAddress = SwithPosition(poco,address,TargetCity,SwitchNum) #切换定位                        
@@ -74,7 +80,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
             continue        
         storelenNum = 0
         swipeNume= 0
-        #第一次大幅度滑动
+        # 第一次大幅度滑动
         if DeviceType == 1:            
             poco.swipe([0.2,0.9],[0.2,0.45],duration = 0.3)  
         else:
@@ -83,14 +89,14 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
             if poco(text="常用药品").exists():
                 poco(text="常用药品").click()
                 AllClassifyInputClickNum += 1
-        #按照销量排序
+        # 按照销量排序
         if poco(text = '销量').exists():
            poco(text = '销量').wait(waitTime).click() 
-        #当前循环是一个定位点的门店
+        # 当前循环是一个定位点的门店
         backPage = poco("com.sankuai.meituan.takeoutnew:id/iv_back")    
         bottomElement = poco("com.sankuai.meituan.takeoutnew:id/noMoreView")         
         while True:
-            #判断程序是否被紧急置停
+            # 判断程序是否被紧急置停
             mode = DbContext.GetDeviceRunningMode(DeviceNum)
             if mode == 5:
                 device.keyevent("4")
@@ -98,7 +104,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
             AllStore = poco("com.sankuai.meituan.takeoutnew:id/fl_fragment_container").offspring("com.sankuai.meituan.takeoutnew:id/pull_to_refresh_view").offspring("com.sankuai.meituan.takeoutnew:id/viewpager_content").offspring("com.sankuai.meituan.takeoutnew:id/wm_st_poi_channel_list").child("android.widget.FrameLayout").wait(waitTime)                       
             i = 0
             if len(AllStore) > 0:
-                #print('当前列表展示的门店数量：'+  str(len(AllStore)))
+                # print('当前列表展示的门店数量：'+  str(len(AllStore)))
                 circleIsFail = False
                 for store in AllStore:                    
                     if i == 0:
@@ -111,7 +117,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                             continue                        
                         storeName = storeNameResult[2]       
                         
-                        #销量、评分
+                        # 销量、评分
                         Sell = '0'
                         Score = '评分未知'                      
                         # time_ScoreUI = storeNameResult[1].child("android.widget.LinearLayout")
@@ -134,10 +140,10 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                             else:
                                 Score = storeScoreResult[1]
                         
-                        #该定位点存在且门店名称也存在,有且只有一个地址,那么就不需要继续爬门店地址,更新销量和评分数据即可
+                        # 该定位点存在且门店名称也存在,有且只有一个地址,那么就不需要继续爬门店地址,更新销量和评分数据即可
                         IsClickStore = False
                         if storeSellResult[0] and storeScoreResult[0]: #销量和评分全部获取到在判断
-                            #同一定位地址,同店铺名字的不予考虑   
+                            # 同一定位地址,同店铺名字的不予考虑   
                             if storeName in StoreList:
                                 continue 
                             else:
@@ -155,14 +161,14 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                                 storeInfo['Brand'] = ''
                                 storeInfo['Created'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
                             IsClickStore,addressinfo,mtWmPoiId = DbContext.GetStoreInfo(storeName,str(Score),str(Sell).replace("月售","").replace("+","").replace("件",""),addressGenhash,TargetCity)
-                        #继续爬取门店地址                           
+                        # 继续爬取门店地址                           
                         if IsClickStore:            
-                            #根据店名+城市找地址                  
+                            # 根据店名+城市找地址                  
                             storeAddress,mtWmPoiId = DbContext.UpdateGeoHash(storeName,cityCode,addressGenhash)    
                             storeInfo['OriginAddress'] = storeAddress          
                             storeInfo['Id'] = mtWmPoiId                                                      
                             if FaileAddress in storeAddress:
-                                #根据店名+城市获取地址失败在继续单击查找
+                                # 根据店名+城市获取地址失败在继续单击查找
                                 store.click()
                                 storeAddress = GetStoreInfo(poco,DbContext,DeviceNum)
                                 Sell = str(Sell).replace("月售","").replace("+","").replace("件","")
@@ -189,11 +195,12 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                         continue 
                     except Exception as e:
                         DbContext.AddLog(DeviceNum,3,'设备['+ DeviceNum +']爬取门店列表异常：' + repr(e).replace("'","").replace("\"",""))
+                        continue
                 pass         
                 if circleIsFail:
                     print('获取门店列表失败！')
                     break
-                #判断是否滑动到底部    
+                # 判断是否滑动到底部    
                 Isbottom = bottomElement.exists()    
                 if Isbottom: 
                     print('~~~~~~~~~~~~~~~本次定位的门店到底了~~~~~~~~~~~~~~~')                    
@@ -210,20 +217,20 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                         AllClassifyInputClickNum += 1
                         continue
                 else:
-                    #当前页面展示的门店数量
+                    # 当前页面展示的门店数量
                     if len(AllStore) > 4:  
                         if DeviceType == 1:
                             poco.swipe([0.5,0.8],[0.5,0.35],duration = 0.3) 
                         else:
                             poco.swipe([0.5,0.8],[0.5,0.5],duration = 0.3) 
                     else:                
-                        #手机展示不会超过4 + 1个 P20展示5+1个
+                        # 手机展示不会超过4 + 1个 P20展示5+1个
                         if DeviceType == 1:                            
                             poco.swipe([0.5,0.8],[0.5,0.45],duration = 0.3) 
                         else:                              
                             poco.swipe([0.5,0.8],[0.5,0.65],duration = 0.3) 
                     swipeNume += 1
-                    #滑动了40次(至少是120家店) 且门店数量还是小于一页，那么认为这个也没滑动到底且没有门店滑动到底的提示
+                    # 滑动了40次(至少是120家店) 且门店数量还是小于一页，那么认为这个也没滑动到底且没有门店滑动到底的提示
                     if swipeNume > 40:
                         if len(StoreList) < 6 or len(AllStore) < 4:                            
                             if not ClickClassify(poco,AllClassifyInputClickNum):
@@ -231,7 +238,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                                     backPage.wait(waitTime).click()
                                 else:
                                     device.keyevent("4")   
-                                #如果是大类进来的，还要在返回一次
+                                # 如果是大类进来的，还要在返回一次
                                 if IsAllClassifyInput:
                                     device.keyevent("4")
                                 print('认为这个也没滑动到底且没有门店滑动到底的提示而退出')
@@ -240,7 +247,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                                 AllClassifyInputClickNum += 1
                                 continue
             else:
-                #判断定位点附近是否有门店
+                # 判断定位点附近是否有门店
                 if poco(text = '该定位下暂无服务商家，请切换地址').exists():                    
                     print('~~~~~~~~~~~~~~~~该定位下暂无服务商家，请切换地址~~~~~~~~~~~~~~~~')                                        
                     if not ClickClassify(poco,AllClassifyInputClickNum):
@@ -254,7 +261,7 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
                     else:
                         AllClassifyInputClickNum += 1
                         continue
-                #跳到登录界面需要退出
+                # 跳到登录界面需要退出
                 if poco(text = '获取短信验证码').exists():    
                     device.keyevent("4")
                     continue                         
@@ -279,9 +286,9 @@ def StartCapture(poco,AllPosition,DeviceType,TargetCity,DeviceNum,cityCode,devic
         pass        
         print('===========================【'+ DeviceNum +'】抓取【' + address + '】完成===========================\n')    
     return currentTaskResult,False
-    #有些情况没有滑动到底部就退出,因此要保证保证滑动到底部才更新定位点
-    #改成在外面更新任务的状态
-    #if IsBottomNum > 0:
+    # 有些情况没有滑动到底部就退出,因此要保证保证滑动到底部才更新定位点
+    # 改成在外面更新任务的状态
+    # if IsBottomNum > 0:
     #    DbContext.updateAddressIsCap(address,len(StoreList))   
 # 是否点击夜间送药
 def ClickClassify(poco,AllClassifyInputClickNum):

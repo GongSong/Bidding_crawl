@@ -126,8 +126,8 @@ def GetProduct(poco,device,storeId):
                 else:
                     maxNum+=1
                 
-                #滑动10次依旧没有商品新增,则认为到底了
-                if maxNum > 10:
+                #滑动20次依旧没有商品新增,则认为到底了
+                if maxNum > 20:
                     print('~~~~~~~~~~~~~~~~~程序判定滑动到了底部~~~~~~~~~~~~~~~')
                     break
                 else:

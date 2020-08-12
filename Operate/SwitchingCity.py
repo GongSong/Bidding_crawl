@@ -17,8 +17,8 @@ def SwitchingCity(poco,targetcity):
         if targetcity not in CurrentlocateCity :
             #跳转到切换城市页面            
             poco("com.sankuai.meituan.takeoutnew:id/wm_address_city_location_arrow").wait(waitTime).click()                        
-            try:
-                time.sleep(3)
+            try:#541 244
+                # time.sleep(5)
                 locate = poco(text = "输入城市名进行搜索").wait(waitTime)
                 if locate.exists():                    
                     #搜索

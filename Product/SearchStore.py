@@ -53,10 +53,13 @@ def SearchCatchStore(storeId:str,poco,device,DeviceNum:str,DeviceType:int):
         time.sleep(3) #睡眠一段时间等待页面加载
         storeNames = poco("com.sankuai.meituan.takeoutnew:id/list_poiSearch_poiList").child("android.widget.LinearLayout")
         for sName in storeNames:
-            if DealStoreName(sName.offspring("com.sankuai.meituan.takeoutnew:id/textview_poi_name").get_text())==DealStoreName(StoreName):
+            if sName.offspring("com.sankuai.meituan.takeoutnew:id/textview_poi_name").exists():
                 #找到要爬取的门店,继续商品信息
-                sName.wait(waitTime).click()                            
-                CatchProductResult = ProductInfo.GetProduct(poco,device,storeId)
+                stName = DealStoreName(sName.offspring("com.sankuai.meituan.takeoutnew:id/textview_poi_name").get_text())
+                print("店名："+stName)
+                if stName==DealStoreName(StoreName):
+                    sName.wait(waitTime).click()                            
+                    CatchProductResult = ProductInfo.GetProduct(poco,device,storeId)
 
         return 
         swipeNume= 0
@@ -161,7 +164,7 @@ def SearchCatchStore(storeId:str,poco,device,DeviceNum:str,DeviceType:int):
                         AllClassifyInputClickNum += 1
                         continue      
                 storelenNum += 1                                      
-                if storelenNum > 5:
+                if storelenNum > 10:
                     print('【因为获取门店列表长度为0而结束本次定位查询】')
                     if not ClickClassify(poco,AllClassifyInputClickNum):
                         if backPage.exists():                                         

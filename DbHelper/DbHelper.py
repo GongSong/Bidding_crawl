@@ -51,7 +51,7 @@ class DbHelper(DbBase):
                 mtWmPoiId = shopInfo.mtWmPoiId
                 super()._InsertByEntity(shopInfo) 
             else:
-                sql = "select mtWmPoiId,shopName from shop where shopName = '"+shopName+"' and address like '%"+addressNoNumer +"%'"
+                sql = "select mtWmPoiId,shopName from shop where shopName = '"+shopName+"' and address like '%"+addressNoNumer +"%' order by InsertTime asc"
                 cursors.execute(sql)
                 result = cursors.fetchall()
                 shopid=''
@@ -351,7 +351,7 @@ class DbHelper(DbBase):
             super()._InsertByEntity(logs)
         except Exception as e:
             self._conn.rollback()
-            print('执行sql语句出错：'+repr(e))  
+            print('执行sql语句出错：'+repr(e)+"[sql]="+logs)  
         pass
 
     

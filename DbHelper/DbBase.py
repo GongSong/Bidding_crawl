@@ -120,6 +120,8 @@ class DbBase:
             insert into %s (%s)
             values (%s)
         ''' % (tablename, field, values)
+        # ''' % (tablename, field,pm.escape_string(values))
+
         return self.Insert(sql)
 
     # 根据ID字段更新实体有值部分

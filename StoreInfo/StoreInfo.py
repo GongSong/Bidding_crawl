@@ -44,7 +44,7 @@ def GetStoreInfo(poco,DbContext,DeviceNum):
                             if len(view) > 1:
                                 item = view[1].child(name = 'android.widget.TextView')
                                 if item.exists():        
-                                    storeAddress = item.get_text()
+                                    storeAddress = item.get_text().replace('\'','|')
                                     #判断是否是正确的地址
                                     for item in notAddressList:
                                         if item in storeAddress:

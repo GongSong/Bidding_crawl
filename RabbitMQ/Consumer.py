@@ -44,6 +44,7 @@ class ReceiveMessage(BaseRabbitMQ):
                 print(repr(e))
                 continue
                    
+        #这里会限制只能重启8台
         if len(RunDevice) < 9:
             #获取没有运行的设备
             DbContext = DbHelper()
@@ -130,12 +131,14 @@ class ReceiveMessage(BaseRabbitMQ):
             GeoHash = str(receiveMsgDict['GeoHash'])
             Province = receiveMsgDict['Province']
             District = receiveMsgDict['District']
+            if(District is None):
+                District = ''
             City = receiveMsgDict['City']
             Task = receiveMsgDict['Task']       
             Exec = receiveMsgDict['Exec']     
             Address = ''
             if receiveMsgDict['Address'] != None and receiveMsgDict['Address'] != '':
-                Address = str(receiveMsgDict['Address']).replace("|","")
+                Address = str(receiveMsgDict['Address']).replace("|","").replace("'","")
             else:
                 if '0.0' in str(Lng) or '0.0' in str(Lat): 
                     errorResult = self.__ErrorReturn(receiveMsgDict)
@@ -175,7 +178,7 @@ class ReceiveMessage(BaseRabbitMQ):
                                 GeoHash = GeoHash,
                                 Exec = str(Exec))   
                     DbContext = DbHelper()
-                    DbContext._InsertByEntity(tasks)            
+                    DbContext._InsertByEntity(tasks)      
                     #手动确认                        
                     ch.basic_ack(delivery_tag = method.delivery_tag)
             except Exception as e:

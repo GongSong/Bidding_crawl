@@ -18,9 +18,9 @@ import time
 def main(DeviceNum):
     # 多设备连接时,可指定设备编号
     # python -m airtest run main.py --device Android://127.0.0.1:5037/0123456789ABCDEF
-    #device = Android('GWY0216C16002906')
+    # device = Android('GWY0216C16002906')
     # 设备类型 1 手机[720,1280][1080,1920] 2平板[1200,1920]
-    #DeviceNum = 'c5bac654'
+    # DeviceNum = 'c5bac654'
     NeedSwipe = ['CLB0218414001154', 'DLQ0216824000142', 'E4J4C17405011422',
                  'APU0216530000778', 'APU0216408028484', 'APU0216111008105']
     try:
@@ -87,18 +87,40 @@ def main(DeviceNum):
             elif mode == 6:
                 storeId = []
                 if(DeviceNum == "0123456789ABCDEF"):
-                    # storeId2 = "19b15290305911ea886a005056c00008"
-                    storeId6 = "2e89aa4e39a711eaad6c00e04c680875"
-                    # SearchCatchStore(storeId5,
-                    #                  poco, device, DeviceNum, DeviceType)
-                    # BackHomePage(
-                    #     poco, DbContext, DeviceNum, device)  # 返回首页
-                    SearchCatchStore(storeId6,
-                                     poco, device, DeviceNum, DeviceType)
+                    storeIds = []
+                    # storeIds.append("e2c11bfe305b11ea8d92005056c00008")
+                    # storeIds.append("0a06a048683a11eabb8500bb602e7439")
+                    # storeIds.append("830d55d4c69c11ea81d100e04c81a0a3")
+                    # storeIds.append("8b23a394c69d11ea895900e04c680875")
+                    storeIds.append("a3323206a92f11eaa84700e04c680875")
+                    # storeIds.append("4dc00ce6305a11ea89c6005056c00008")
+                    for storeId in storeIds:
+                        SearchCatchStore(storeId,
+                                         poco, device, DeviceNum, DeviceType)
+                        BackHomePage(
+                            poco, DbContext, DeviceNum, device)  # 返回首页
                     BackHomePage(
                         poco, DbContext, DeviceNum, device)  # 返回首页
-                elif(DeviceNum == "E4J4C17405011422"):
-                    storeId = "aee3b0708bc011ea8ecf00e04c680875"
+                elif(DeviceNum == "APU0215B25001477"):
+                    storeIds = []
+                    # storeIds.append("c6c3ad12305a11ea882a005056c00008")
+                    # storeIds.append("dd386e06305911eaa34f005056c00008")
+                    storeIds.append("99d93998305911ea8599005056c00008")
+
+                    storeIds.append("7f3bd434305a11ea9d80005056c00008")
+                    storeIds.append("d77bc6f83b2a11ea98ad00e04c680875")
+                    storeIds.append("cffd8840305a11ea8ef2005056c00008")
+                    storeIds.append("a65e8b00305a11eaaabc005056c00008")
+                    storeIds.append("196f949e305911eab629005056c00008")
+                    storeIds.append("8e45a038305911ea94b7005056c00008")
+
+
+                    for storeId in storeIds:
+                        SearchCatchStore(storeId,
+                                         poco, device, DeviceNum, DeviceType)
+                        BackHomePage(
+                            poco, DbContext, DeviceNum, device)  # 返回首页
+
                 elif(DeviceNum == "APU0216530000778"):
                     storeId = "d89e35ec845f11ea802b00e04c680875"
                 elif(DeviceNum == 'APU0215C11003517'):
