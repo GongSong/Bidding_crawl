@@ -3,9 +3,9 @@ import sys
 from Main.main import main
 
 
-spider_count = 0
 def ProgramEnter():
-    main('0123456789ABCDEF')
+    main('DLQ0216729004546')
+
 
 if __name__ == '__main__':
     ProgramEnter()

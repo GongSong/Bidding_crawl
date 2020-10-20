@@ -14,8 +14,8 @@ def SearchDrugPage(poco,device,DeviceNum):
     HasDrugClassify = False
     while True:
         try:
-            if poco(text="送药上门").exists():
-                poco(text="送药上门").wait(waitTime).click()
+            if poco(text="买药").exists():
+                poco(text="买药").wait(waitTime).click()
                 HasDrugClassify = True
                 break
             switchNum += 1            
@@ -25,7 +25,7 @@ def SearchDrugPage(poco,device,DeviceNum):
         except PocoNoSuchNodeException:
             continue
         except Exception as e:
-            print('搜索送药上门页面异常')            
+            print('搜索买药页面异常')
     if HasDrugClassify:
         if poco(text="常用药品").exists():
             poco(text="常用药品").wait(waitTime).click()

@@ -23,7 +23,7 @@ def StartCapture(poco, AllPosition, DeviceType, TargetCity, DeviceNum, cityCode,
     if DeviceNum == 'E4J4C17405011422':
         poco.swipe([0.5, 0.5], [0.5, 0.6], duration=0.3)
     IsAddress = SwithPosition(
-        poco, AllPosition[0]['RepresentativeAdress'], TargetCity, 0)  # 第一次切换定位
+        poco, AllPosition[0]['RepresentativeAdress'], TargetCity,DeviceNum, 0)  # 第一次切换定位
     if not IsAddress:
         return currentTaskResult, False
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -160,7 +160,7 @@ def StartCapture(poco, AllPosition, DeviceType, TargetCity, DeviceNum, cityCode,
                                 storeInfo['Phone'] = ''
                                 storeInfo['Brand'] = ''
                                 storeInfo['Created'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
-                            IsClickStore,addressinfo,mtWmPoiId = DbContext.GetStoreInfo(storeName,str(Score),str(Sell).replace("月售","").replace("+","").replace("件",""),addressGenhash,TargetCity)
+                            IsClickStore,addressinfo,mtWmPoiId = DbContext.GetStoreInfo(storeName,str(Score),str(Sell).replace("月售","").replace("+","").replace("件",""),addressGenhash,TargetCity,address)
                         # 继续爬取门店地址                           
                         if IsClickStore:            
                             # 根据店名+城市找地址                  

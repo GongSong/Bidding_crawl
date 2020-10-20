@@ -73,7 +73,7 @@ class DbHelper(DbBase):
                     print('+++++++++++++++++++++++爬到的门店地址存在但不是同个品牌也新增+++++++++++++++++++++++')
                     super()._InsertByEntity(shopInfo) 
                 else:#爬到的店地址存在并且有这个品牌就认为是同一家店
-                    sql = "update shop set wmPoiScore = '" + wmPoiScore + "',SellNum = " + SellNum + " where mtWmPoiId = '" + shopid+"'"         
+                    sql = "update shop set wmPoiScore = '" + wmPoiScore + "',SellNum = " + SellNum +  ",AnchorPoint = '" + AnchorPoint + "'  where mtWmPoiId = '" + shopid+"'"         
                     try:
                         result = cursors.execute(sql)                
                         self._conn.commit()     
@@ -91,9 +91,10 @@ class DbHelper(DbBase):
                     update shop
                     set wmPoiScore = '%s',
                     SellNum = %d,
+                    AnchorPoint = '%s' 
                     where shopName = '%s' and City = '%s' 
                 '''
-                sql = sql % (wmPoiScore,int(SellNum),shopName,city)
+                sql = sql % (wmPoiScore,int(SellNum),AnchorPoint, shopName,city)
                 cursors = self._conn.cursor()
                 result = cursors.execute(sql)                
                 self._conn.commit()   
@@ -123,7 +124,7 @@ class DbHelper(DbBase):
     #根据门店名字和地理散列查找门店信息
     #v2根据门店名字和city查找门店信息
     # def GetStoreInfo(self,shopName,wmPoiScore,SellNum,Genhash,city):
-    def GetStoreInfo(self,shopName,wmPoiScore,SellNum,Genhash,city):
+    def GetStoreInfo(self,shopName,wmPoiScore,SellNum,Genhash,city,AnchorPoint):
         # sql = "select count(*) as nums from shop where shopName = '" + shopName + "' and Genhash like '%" + Genhash + "%' and address not like '%" + FaileAddress + "%'" 
         sql = "select count(*) as nums from shop where shopName = '" + shopName + "' and City = '" + city + "' and address not like '%" + FaileAddress + "%'" 
         cursors = self._conn.cursor()
@@ -133,7 +134,7 @@ class DbHelper(DbBase):
         if int(nums) == 0:#不存在继续爬门店信息           
             return True,'',''
         else:#有说明之前爬过不需要爬地址，直接更新销量等信息
-            sql = "update shop set wmPoiScore = '" + wmPoiScore + "',SellNum = " + SellNum + " where shopName = '" + shopName + "' and City ='" + city + "'"            
+            sql = "update shop set wmPoiScore = '" + wmPoiScore + "',SellNum = " + SellNum +  ",AnchorPoint = '" + AnchorPoint + "' where shopName = '" + shopName + "' and City ='" + city + "'"            
             try:
                 cursors = self._conn.cursor()
                 result = cursors.execute(sql)                
@@ -425,10 +426,17 @@ class DbHelper(DbBase):
 #==================================门店商品爬虫相关==================================#
     def GetStorePoint(self,StoreId:str):
         sql = """
-            select s.shopName,s.City,s.AnchorPoint
+            select s.shopName,s.City,s.AnchorPoint,s.address,s.mtWmPoiId
             from shop s
             where s.mtWmPoiId = '%s'
         """ % (StoreId)
+        return self.Query(sql)        
+    def GetStorePointForName(self,StoreName:str):
+        sql = """
+            select s.shopName,s.City,s.AnchorPoint,s.address,s.mtWmPoiId
+            from shop s
+            where s.shopName = '%s'
+        """ % (StoreName)
         return self.Query(sql)        
     
     #同步商品信息
