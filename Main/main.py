@@ -1,6 +1,4 @@
 # -*- encoding=utf8 -*-
-from Product.GetsData import get_shopName, write_excel
-
 __author__ = "lwq"
 from poco.proxy import UIObjectProxy
 from airtest.core.android import Android
@@ -15,11 +13,9 @@ from Operate.ClearMemcache import ClearMemory
 from Product.SearchStore import SearchCatchStore, search_store
 import datetime
 import time
-import pymysql
 from apscheduler.schedulers.blocking import BlockingScheduler
+from Product.GetsData import get_shopName, write_excel, crawled_status_code, crawling_status_code
 
-conn = pymysql.connect(host='localhost', user='root', password='123456', port=3306, db='shopinfo', charset='utf8')
-cursor = conn.cursor()
 
 def main(DeviceNum):
     # 多设备连接时,可指定设备编号
@@ -91,155 +87,16 @@ def main(DeviceNum):
             elif mode == 5:
                 IsRunning = False
             elif mode == 6:  # 根据店名爬取
-                sched = BlockingScheduler()
                 while True:
-                    @sched.scheduled_job('cron', day_of_week='mon-sun', hour=9, minute=0, end_date='2020-10-10')
-                    def job():
-                        device.wake()
-                        # 1, 存到1表
-                        if(DeviceNum == "DLQ0216630004610"):  # 爬取我方的72家
-                            res = get_shopName()
-                            count = len(res[1])  # 取出返回元组的药店名
-                            other_shop = res[1]
-                            sql = 'select shop_index, spider_num from shopindex where device_num="DLQ0216630004610"'
-                            cursor.execute(sql)
-                            shopindex = cursor.fetchone()
-                            flag = int(shopindex[0])
-                            spider_num = int(shopindex[1])
-                            for i in range(flag, 31):
-                                storeName = other_shop[i]
-                                print(storeName, '第' + str(i) + '家店')
-                                search_store(storeName, poco, device, DeviceNum, DeviceType, i, spider_num)
-                                f = i + 1
-                                sql1 = 'update shopindex set shop_index=%s where device_num="DLQ0216630004610"'%str(f)
-                                cursor.execute(sql1)
-                                conn.commit()
-                                BackHomePage(poco, DbContext, DeviceNum, device)
-                                write_excel(str(spider_num)+'-'+str(i))
-                            spider_num += 1
-                            sql1 = 'update shopindex set shop_index=0, spider_num=%s where device_num="DLQ0216630004610"'%(spider_num)
-                            cursor.execute(sql1)
-                            conn.commit()
-                        # 2，
-                        elif DeviceNum == 'DLQ0216729004546':  # E4J4C17405011422， 5LM0216B03001264
-                            res = get_shopName()
-                            other_shop = res[1]  # 取出返回元组的药店名
-                            sql = 'select shop_index, spider_num from shopindex where device_num="DLQ0216729004546"'
-                            cursor.execute(sql)
-                            shopindex2 = cursor.fetchone()
-                            flag = int(shopindex2[0])
-                            spider_num = int(shopindex2[1])
-                            for k in range(flag, 62):
-                                storeName = other_shop[k]
-                                print(storeName, '第' + str(k) + '家店')
-                                search_store(storeName, poco, device, DeviceNum, DeviceType, k, spider_num)
-                                f = k + 1
-                                sql1 = 'update shopindex set shop_index=%s where device_num="DLQ0216729004546"' % str(f)
-                                cursor.execute(sql1)
-                                conn.commit()
-                                BackHomePage(poco, DbContext, DeviceNum, device)
-                                write_excel(str(spider_num)+'-'+str(k))
-                            spider_num += 1
-                            sql1 = 'update shopindex set shop_index=31, spider_num=%s where device_num="DLQ0216729004546"'%(spider_num)
-                            cursor.execute(sql1)
-                            conn.commit()
-                        # 3 ; 存到1表
-                        elif DeviceNum == 'E4J4C17405011422':
-                            res = get_shopName()
-                            other_shop = res[1]  # 取出返回元组的药店名
-                            sql = 'select shop_index, spider_num from shopindex where device_num="E4J4C17405011422"'
-                            cursor.execute(sql)
-                            shopindex3 = cursor.fetchone()
-                            flag = int(shopindex3[0])
-                            spider_num = int(shopindex3[1])
-                            for j in range(flag, 93):
-                                storeName = other_shop[j]
-                                print(storeName, '第' + str(j) + '家店')
-                                search_store(storeName, poco, device, DeviceNum, DeviceType, j, spider_num)
-                                f = j + 1
-                                sql1 = 'update shopindex set shop_index=%s where device_num="E4J4C17405011422"' % str(f)
-                                cursor.execute(sql1)
-                                conn.commit()
-                                BackHomePage(poco, DbContext, DeviceNum, device)
-                                write_excel(str(spider_num)+'-'+str(j))
-                            spider_num += 1
-                            sql1 = 'update shopindex set shop_index=62, spider_num=%s where device_num="E4J4C17405011422"'%(spider_num)
-                            cursor.execute(sql1)
-                            conn.commit()
-                        # 4，
-                        elif DeviceNum == '5LM0216910000994':
-                            res = get_shopName()
-                            other_shop = res[1]  # 取出返回元组的药店名
-                            sql = 'select shop_index, spider_num from shopindex where device_num="5LM0216910000994"'
-                            cursor.execute(sql)
-                            shopindex4 = cursor.fetchone()
-                            flag = int(shopindex4[0])
-                            spider_num = int(shopindex4[1])
-                            count = len(res[1])
-                            for l in range(flag, 124):
-                                storeName = other_shop[l]
-                                print(storeName, '第' + str(l) + '家店')
-                                search_store(storeName, poco, device, DeviceNum, DeviceType, l, spider_num)
-                                f = l + 1
-                                sql1 = 'update shopindex set shop_index=%s where device_num="5LM0216910000994"' % str(f)
-                                cursor.execute(sql1)
-                                conn.commit()
-                                BackHomePage(poco, DbContext, DeviceNum, device)
-                                write_excel(str(spider_num)+'-'+str(l))
-                            spider_num += 1
-                            sql1 = 'update shopindex set shop_index=93, spider_num=%s where device_num="5LM0216910000994"'%(spider_num)
-                            cursor.execute(sql1)
-                            conn.commit()
-                        # 5,
-                        elif (DeviceNum == "5LM0216B03001264"):
-                            res = get_shopName()
-                            other_shop = res[1]
-                            sql = 'select shop_index, spider_num from shopindex where device_num="5LM0216B03001264"'
-                            cursor.execute(sql)
-                            shopindex = cursor.fetchone()
-                            flag = int(shopindex[0])
-                            spider_num = int(shopindex[1])
-                            for i in range(flag, 155):
-                                storeName = other_shop[i]
-                                print(storeName, '第' + str(i) + '家店')
-                                search_store(storeName, poco, device, DeviceNum, DeviceType, i, spider_num)
-                                f = i + 1
-                                sql1 = 'update shopindex set shop_index=%s where device_num="5LM0216B03001264"' % str(f)
-                                cursor.execute(sql1)
-                                conn.commit()
-                                BackHomePage(poco, DbContext, DeviceNum, device)
-                                write_excel(str(spider_num)+'-'+str(i))
-                            spider_num += 1
-                            sql1 = 'update shopindex set shop_index=124, spider_num=%s where device_num="5LM0216B03001264"' % (
-                                spider_num)
-                            cursor.execute(sql1)
-                            conn.commit()
-                        # 6,
-                        elif (DeviceNum == "APU0216408028484"):
-                            res = get_shopName()
-                            count = len(res[1])  # 取出返回元组的药店名
-                            other_shop = res[1]
-                            sql = 'select shop_index, spider_num from shopindex where device_num="APU0216408028484"'
-                            cursor.execute(sql)
-                            shopindex = cursor.fetchone()
-                            flag = int(shopindex[0])
-                            spider_num = int(shopindex[1])
-                            for i in range(flag, 191):
-                                storeName = other_shop[i]
-                                print(storeName, '第' + str(i) + '家店')
-                                search_store(storeName, poco, device, DeviceNum, DeviceType, i, spider_num)
-                                f = i + 1
-                                sql1 = 'update shopindex set shop_index=%s where device_num="APU0216408028484"' % str(f)
-                                cursor.execute(sql1)
-                                conn.commit()
-                                BackHomePage(poco, DbContext, DeviceNum, device)
-                                write_excel(str(spider_num)+'-'+str(i))
-                            spider_num += 1
-                            sql1 = 'update shopindex set shop_index=155, spider_num=%s where device_num="APU0216408028484"' % (
-                                spider_num)
-                            cursor.execute(sql1)
-                            conn.commit()
-                    sched.start()
+                    id_name_addr_city = get_shopName()
+                    shopid = id_name_addr_city[0]
+                    storeName = id_name_addr_city[1]
+                    addr = id_name_addr_city[2]
+                    city = (id_name_addr_city[3])[:-1]
+                    crawling_status_code(storeName)
+                    search_store(storeName, poco, device, addr, city, shopid)
+                    BackHomePage(poco, DbContext, DeviceNum, device)
+                    crawled_status_code(storeName)
 
             if(len(taskList) == 1):
                 # 更新任务为运行中
