@@ -1,149 +1,155 @@
 import pandas as pd
 import pymysql
 from Send_Message import send_email, send_text, send_T1, send_T2, send_T3T4, send_T5T6, send_s30p200, send_self, \
-    set_file
+    set_file, get_person
 from openpyxl import Workbook
 from openpyxl.styles import Font
 import time
-
-
 conn = pymysql.connect(host='localhost', user='root', password='123456', port=3306, db='shopinfo', charset='utf8')
 cursor = conn.cursor()
 
-
-# 从excel获取两方药店的名称, 地址
+'''
+从数据库获取竞争药店状态码为0的店，
+若状态码为0和为1的店的数量为零，就将店家的状态吗更新为0
+'''
 def get_shopName():
-    xl = pd.read_excel(r"D:\工作文件\mt\191家目标店&竞品店铺信息清单 20200908.xlsx", sheet_name='赋能')
-    we_shop = list(xl.iloc[0:191, 5])  # 我店
-    other_shop = list(xl.iloc[0:191, 12])  # 竞店
-    we_address = list(xl.iloc[0:191, 7])
-    other_address = list(xl.iloc[0:191, 13])
-    we_storeCity = list(xl.iloc[0:191, 10])
-    other_storeCity = list(xl.iloc[0:191, 15])
-    return we_shop, other_shop, we_address, other_address, we_storeCity, other_storeCity
+    global task
+    task = []
+    sql = 'select id, storename, store_addr, city from mt_com_drugstore where status_code=0'
+    cursor.execute(sql)
+    id_name_addr_city = cursor.fetchone()
+    conn.commit()
+    if len(id_name_addr_city) == 0:
+        sql = 'select id, storename, store_addr, city from mt_com_drugstore where status_code=1'
+        cursor.execute(sql)
+        id_name_addr_city = cursor.fetchall()
+        conn.commit()
+        if len(id_name_addr_city) == 0:
+            crawl_status_code()
+        else:
+            storename = id_name_addr_city[1]
+            task.append(storename)
+    else:
+        return id_name_addr_city
 
 
-# 从excel获取药品数据
+# 获取最近一条执行了但是没有回写数据库的任务执行时间
+def get_last_time():
+    sql = 'select storename from mt_com_drugstore where status_code=1'
+    cursor.execute(sql)
+    storename = cursor.fetchone()
+    conn.commit()
+    if storename in task:
+        sql = 'update mt_com_drugstore set status_code=0 where storename={}'.format('"'+storename+'"')
+        cursor.execute(sql)
+        conn.commit()
+        task.remove(storename)
+    else:
+        pass
+
+
+# 从数据库获取药品数据
 def get_drug():
-    df = pd.read_excel(r'D:\工作文件\mt\30个竞价商品清单（直营&赋能）.xlsx')
-    drug_name = list(df.iloc[0:31, 1])  # 切片操作获取药品名
-    drug_code = list(df.iloc[0:31, 3])
-    drug_Allname = list(df.iloc[0:31, 4])
-    return drug_name
+    sql = 'select id, drugname from mt_drugname'
+    cursor.execute(sql)
+    drugs = cursor.fetchall()
+    conn.commit()
+    return drugs
+
+
+# 正在爬取的药店设为1
+def crawling_status_code(storeName):
+    sql = 'update mt_com_drugstore set status_code=1 where storename={}'.format('"'+storeName+'"')
+    cursor.execute(sql)
+    conn.commit()
+
+
+# 爬取结束的药店设为2
+def crawled_status_code(storeName):
+    sql = 'update mt_com_drugstore set status_code=2 where storename={}'.format('"'+storeName+'"')
+    cursor.execute(sql)
+    conn.commit()
+
+
+# 未爬取状态码设为0
+def crawl_status_code():
+    sql = 'update mt_com_drugstore set status_code=0'
+    cursor.execute(sql)
+    conn.commit()
 
 
 # 将我店竟店数据写入excel
-def write_excel(flag):
-    spider_num = int(flag.split('-')[0])
-    drug_index = flag.split('-')[1]
-    pre_flag = str(spider_num - 1) + '-' + drug_index
-    # 连接数据库获取竟方店铺信息
-    other_storeCity = get_shopName()[5]
-    other_city = other_storeCity[int(drug_index)]
-    sql = 'select * from drug_info where flag={}'.format('"'+flag+'"')
-    cursor.execute(sql)
-    others = cursor.fetchall()   # 30个药品， 查询标记为flag的商店药品数据
-    conn.commit()
-    sql1 = 'select * from drug_info where flag={}'.format('"'+pre_flag+'"')
-    cursor.execute(sql1)
-    pre_others = cursor.fetchall()
-    conn.commit()
-    print(len(others), len(pre_others), flag, pre_flag)
-    if len(others) == 30 and len(pre_others) == 30:  # 一方下标为flag的数据不存在就不做比较
-        # 创建excel
-        font = Font(name='微软雅黑', size=9)
-        wb = Workbook(write_only=True)
-        sheet = wb.create_sheet(flag)
-        sheet.font = font
-        row = ['序号', '爬取次数', '月份', '抓取日期', '上次抓取时间', '商品名称', '竟店店铺名称', '上次价格', '上次月销', '售罄情况', '本次抓取时间', '本次价格', '本次月销',
-               '售罄情况', '价差', '警报']
-        sheet.append(row=row)
-        a = 0
-        for i in range(30):
-            # 售罄情况
-            pre_sellout = pre_others[i][4]
-            other_sellout = others[i][4]
-            # 时间日期
-            pre_datetime = pre_others[i][5]
-            pre_times = pre_datetime.split()[1]  # 上次时间
-            datetime_z = others[i][5]
-            date = datetime_z.split()[0]  # 日期
-            month = date.split('-')[1]  # 月份
-            times = datetime_z.split()[1]  # 时间
-            # 价格
-            pre_shopname = (pre_others[i])[0]
-            Drugname = pre_others[i][1]
-            pre_price = (pre_others[i][2])
-            pre_sale = pre_others[i][3]
-            # # 竟店信息
-            other_shopname = others[i][0]
-            other_price = others[i][2]
-            other_sale = others[i][3]
-            # 价格信息处理
-            if other_price == '无售卖' or pre_price == '无售卖':
-                spread = tips = ''
-                remarks = ''
-            elif pre_price == '无售卖' and other_price == '无售卖':
-                spread = tips = ''
-                remarks = '无售卖'
-            else:
-                spread = float(other_price) - float(pre_price)  # 价差，这次比上次
-                if spread > 0:
-                    a += 1
-                    tips = '比昨天高' + str(abs(round(spread, 5))) + '元'
-                    row = [i, spider_num, month, date, pre_times, Drugname, other_shopname, pre_price, pre_sale, pre_sellout, times, other_price, other_sale, other_sellout, spread, tips]
-                    sheet.append(row=row)
-                elif spread < 0:
-                    a += 1
-                    tips = '比昨天低' + str(abs(round(spread, 5))) + '元'
-                    row = [i, spider_num, month, date, pre_times, Drugname, other_shopname, pre_price, pre_sale, pre_sellout, times, other_price, other_sale, other_sellout, spread, tips]
-                    sheet.append(row=row)
-                else:
-                    tips = '价格相等！'
-        print('表生成成功！')
-        file = 'D:\\工作文件\\价格比较\\' + date + '-' + str(drug_index) + '价格对比.xlsx'
-        wb.save(file)
-        link_url = set_file(file)  # 获取链接
-        content = '竟店价格变动：' + date + ' ' + times + ' ' + other_shopname
-        if a != 0:
-            get_person(other_shopname, content, link_url)
-    else:
-        print('有一方数据不全无法比较！')
-
-
-# 获取人员信息，发送消息到各人员的群中
-def get_person(other_shopname, content, link_url):
-    xl = pd.read_excel(r"D:\工作文件\mt\store list 202009071624.xlsx")
-    shop_names = list(xl.iloc[0:191, 5])  # 店名
-    head_person = list(xl.iloc[0:191, 11])  # 负责人
+def write_excel(drug_list):
+    # 创建excel
+    font = Font(name='微软雅黑', size=9)
+    wb = Workbook(write_only=True)
+    sheet = wb.create_sheet('竞价')
+    sheet.font = font
+    row = ['序号', '月份', '抓取日期', '上次抓取时间', '商品名称', '竟店店铺名称', '上次价格', '上次月销', '售罄情况', '本次抓取时间', '本次价格', '本次月销','售罄情况', '价差', '警报']
+    sheet.append(row=row)
     a = 0
-    for index, shop_name in enumerate(shop_names):
-        if shop_name == other_shopname:
-            a += 1
-            person = head_person[index]
-            if person == '杨晓明&丁俊':
-                send_T1(other_shopname, content, link_url)
-                print('发送成功！1')
-            elif person == '范文超':
-                send_T2(other_shopname, content, link_url)
-                print('发送成功！2')
-            elif person == '笑寒':
-                send_T3T4(other_shopname, content, link_url)
-                print('发送成功！3')
-            elif person == '郭燕':
-                send_T5T6(other_shopname, content, link_url)
-                print('发送成功！4')
-            elif person == '朱沙沙&谢威盛':
-                send_s30p200(other_shopname, content, link_url)
-                print('发送成功！5')
-            elif person == '蔡培桂，赵嘉雄，谭群红，范文超':
-                send_self(other_shopname, content, link_url)
-                print('发送成功！6')
-            else:
-                print('没有找到这个人, 发送失败！')
-    if a == 0:
-        content1 = '监控到：'+other_shopname+'在storeList表中没有找到对应的店名'
-        print(content1)
+    for index, drug in enumerate(drug_list):
+        Drugname = drug[1]
+        flag = drug[-1]
+        # 查询店名相同的的商店药品数据
+        sql = 'select * from mt_drug_info where Drugname={}'.format('"' + Drugname + '"')
+        print(sql)
+        cursor.execute(sql)
+        pre_drug_list = cursor.fetchall()
+        print(pre_drug_list)
+        conn.commit()
+        if len(pre_drug_list) != 0:
+            for pre_drug in pre_drug_list:
+                pre_flag = pre_drug[-1]
+                if flag == pre_flag:
+                    # 售罄情况
+                    pre_sellout = pre_drug[4]
+                    sellout = drug[4]
+                    # 时间日期
+                    pre_datetime = pre_drug[5]
+                    pre_times = pre_datetime.split()[1]  # 上次时间
+                    datetime_z = drug[5]
+                    date = datetime_z.split()[0]  # 日期
+                    month = date.split('-')[1]  # 月份
+                    times = datetime_z.split()[1]  # 时间
+                    # pre_drug中的信息
+                    Drugname = pre_drug[1]
+                    pre_price = (pre_drug[2])
+                    pre_sale = pre_drug[3]
+                    # drug中的信息
+                    shopname = drug[0]
+                    price = drug[2]
+                    sale = drug[3]
+                    # 价格信息处理
+                    if price == '无售卖' or pre_price == '无售卖':
+                        spread = tips = ''
+                        remarks = ''
+                    elif pre_price == '无售卖' and price == '无售卖':
+                        spread = tips = ''
+                        remarks = '无售卖'
+                    else:
+                        spread = float(price) - float(pre_price)  # 价差，这次比上次
+                        if spread > 0:
+                            a += 1
+                            tips = '比昨天高' + str(abs(round(spread, 5))) + '元'
+                            row = [index, month, date, pre_times, Drugname, shopname, pre_price, pre_sale, pre_sellout, times, price, sale, sellout, spread, tips]
+                            sheet.append(row=row)
+                        elif spread < 0:
+                            a += 1
+                            tips = '比昨天低' + str(abs(round(spread, 5))) + '元'
+                            row = [index, month, date, pre_times, Drugname, shopname, pre_price, pre_sale, pre_sellout, times, price, sale, sellout, spread, tips]
+                            sheet.append(row=row)
+                        # else:
+                        #     tips = '价格相等！'
+                    content = '竟店价格变动：' + date + ' ' + times + ' ' + shopname
+                    file = 'D:\\Bidding_crawl\\bidding_excel\\' + flag + '价格对比.xlsx'
+                    wb.save(file)
+                    print('表生成成功！')
+                    if a != 0:
+                        link_url = set_file(file)  # 获取链接
+                        get_person(shopname, content, link_url)
+                    break
+        else:
+            print(Drugname+'：上次的数据不存在！')
+        break
 
-
-# write_excel('19-185')
