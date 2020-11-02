@@ -1,7 +1,6 @@
 import pandas as pd
 import pymysql
-from Send_Message import send_email, send_text, send_T1, send_T2, send_T3T4, send_T5T6, send_s30p200, send_self, \
-    set_file, get_person
+from Send_Message import send_email, send_text, send_T1, send_T2, send_T3T4, send_T5T6, send_s30p200, send_self,set_file, get_person
 from openpyxl import Workbook
 from openpyxl.styles import Font
 import time
@@ -19,33 +18,48 @@ def get_shopName():
     cursor.execute(sql)
     id_name_addr_city = cursor.fetchone()
     conn.commit()
-    if len(id_name_addr_city) == 0:
+    if id_name_addr_city == None:
         sql = 'select id, storename, store_addr, city from mt_com_drugstore where status_code=1'
         cursor.execute(sql)
-        id_name_addr_city = cursor.fetchall()
+        status_code1 = cursor.fetchone()
         conn.commit()
-        if len(id_name_addr_city) == 0:
-            crawl_status_code()
+        if status_code1 == None:
+            crawl_status_update()
         else:
-            storename = id_name_addr_city[1]
-            task.append(storename)
+            time.sleep(3000)
+            sql = 'update mt_com_drugstore set status_code=0 where status_code=1'
+            cursor.execute(sql)
+            conn.commit()
     else:
         return id_name_addr_city
 
 
-# 获取最近一条执行了但是没有回写数据库的任务执行时间
-def get_last_time():
-    sql = 'select storename from mt_com_drugstore where status_code=1'
+# 更新任务状态
+def crawl_status_code(storeName, status_code):
+    sql = 'update mt_com_drugstore set status_code={} where storename={}'.format(status_code, '"'+storeName+'"')
     cursor.execute(sql)
-    storename = cursor.fetchone()
     conn.commit()
-    if storename in task:
-        sql = 'update mt_com_drugstore set status_code=0 where storename={}'.format('"'+storename+'"')
-        cursor.execute(sql)
-        conn.commit()
-        task.remove(storename)
-    else:
-        pass
+
+
+# 更新任务为0
+def crawl_status_update():
+    sql = 'update mt_com_drugstore set status_code=0'
+    cursor.execute(sql)
+    conn.commit()
+
+# # 获取最近一条执行了但是没有回写数据库的任务执行时间
+# def get_last_time():
+#     sql = 'select storename from mt_com_drugstore where status_code=1'
+#     cursor.execute(sql)
+#     storename = cursor.fetchone()
+#     conn.commit()
+#     if storename in task:
+#         sql = 'update mt_com_drugstore set status_code=0 where storename={}'.format('"'+storename+'"')
+#         cursor.execute(sql)
+#         conn.commit()
+#         task.remove(storename)
+#     else:
+#         pass
 
 
 # 从数据库获取药品数据
@@ -57,25 +71,7 @@ def get_drug():
     return drugs
 
 
-# 正在爬取的药店设为1
-def crawling_status_code(storeName):
-    sql = 'update mt_com_drugstore set status_code=1 where storename={}'.format('"'+storeName+'"')
-    cursor.execute(sql)
-    conn.commit()
 
-
-# 爬取结束的药店设为2
-def crawled_status_code(storeName):
-    sql = 'update mt_com_drugstore set status_code=2 where storename={}'.format('"'+storeName+'"')
-    cursor.execute(sql)
-    conn.commit()
-
-
-# 未爬取状态码设为0
-def crawl_status_code():
-    sql = 'update mt_com_drugstore set status_code=0'
-    cursor.execute(sql)
-    conn.commit()
 
 
 # 将我店竟店数据写入excel
@@ -142,7 +138,8 @@ def write_excel(drug_list):
                         # else:
                         #     tips = '价格相等！'
                     content = '竟店价格变动：' + date + ' ' + times + ' ' + shopname
-                    file = 'D:\\Bidding_crawl\\bidding_excel\\' + flag + '价格对比.xlsx'
+                    file = '/root/Bidding_crawl/bidding_excel/' + flag + '价格对比.xlsx'
+                    print(file)
                     wb.save(file)
                     print('表生成成功！')
                     if a != 0:

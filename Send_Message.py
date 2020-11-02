@@ -148,6 +148,7 @@ def send_s30p200(other_shopname, content, link_url):
     requests.post(url, data=text_textMsg, headers=HEADERS)
 
 
+# 发送给自营
 def send_self(other_shopname, content, link_url):
     url = 'https://oapi.dingtalk.com/robot/send?access_token=45c641b2299d3b6ae521b8f23f922a1c1358ef765e7e52c79b7a2c86b67f0b08'
     HEADERS = {
@@ -206,8 +207,6 @@ def upload(filename):
     except:
         pass
 
-# upload('F:\\工作文件\\价差比较\\2020-09-11-50价格对比.xlsx')
-
 
 # 设置文件存储时长
 def set_file(filename):
@@ -217,13 +216,12 @@ def set_file(filename):
     token = cursor.fetchone()[0]
     url = "http://fileshare.arkodata.cn/set"
 
-    payload = {'key': key, 'days': '30', 'type': '1'}
+    payload = {'key': key, 'days': '10', 'type': '1'}
     payload = json.dumps(payload)
     headers = {
         'authorization': "Bearer "+token,
         'content-type': "application/json",
     }
-
     try:
         response = requests.post(url, data=payload, headers=headers).text
         link_url = json.loads(response)['data']['url']
@@ -233,4 +231,37 @@ def set_file(filename):
         pass
 
 
-
+# 获取人员信息，发送消息到各人员的群中
+def get_person(other_shopname, content, link_url):
+    sql = 'select storename, director from mt_director'
+    cursor.execute(sql)
+    stores = cursor.fetchall()
+    a = 0
+    for store in stores:
+        shop_name = store[0]
+        if shop_name == other_shopname:
+            a += 1
+            person = store[1]
+            if person == '杨晓明&丁俊':
+                send_T1(other_shopname, content, link_url)
+                print('发送成功！1')
+            elif person == '范文超':
+                send_T2(other_shopname, content, link_url)
+                print('发送成功！2')
+            elif person == '笑寒':
+                send_T3T4(other_shopname, content, link_url)
+                print('发送成功！3')
+            elif person == '郭燕':
+                send_T5T6(other_shopname, content, link_url)
+                print('发送成功！4')
+            elif person == '朱沙沙&谢威盛':
+                send_s30p200(other_shopname, content, link_url)
+                print('发送成功！5')
+            elif person == '蔡培桂，赵嘉雄，谭群红，范文超':
+                send_self(other_shopname, content, link_url)
+                print('发送成功！6')
+            else:
+                print('没有找到这个人, 发送失败！')
+    if a == 0:
+        content1 = '监控到：'+other_shopname+'在storeList表中没有找到对应的店名'
+        print(content1)

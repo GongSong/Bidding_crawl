@@ -12,10 +12,10 @@ from Send_Message import send_email
 #切换定位
 
 
-def SwithPosition(poco,address,targetCity, storeName, DeviceNum,SwitchNum):
+def SwithPosition(poco, address, targetCity, storeName,SwitchNum):
     sec = random.randint(190, 320)
-    print('睡眠'+str(sec)+'秒')
-    time.sleep(sec)
+    print('睡眠-'+str(sec)+'-秒')
+    # time.sleep(sec)
     CloseUpDateInfo(poco)
     #单击定位点
     if poco("com.sankuai.meituan.takeoutnew:id/img_location_arrow").exists():
@@ -50,7 +50,7 @@ def SwithPosition(poco,address,targetCity, storeName, DeviceNum,SwitchNum):
                     return False
                 elif poco(text='啊哦，网络悄悄跑到外星球去了~').exists():
                     print('美团定位接口被封~')
-                    time.sleep()
+                    # time.sleep(1)
 
 
                 try:

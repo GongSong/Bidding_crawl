@@ -1,26 +1,24 @@
-from RabbitMQ.Consumer import ReceiveMessage
-from DbHelper.DbHelper import DbHelper
+from DaemonTask import RunningCheck
+
 import datetime
 import os
 
+
 def main():
-    os.popen('python3.7 DaemonTask.py  &>> /root/airtest/log/TaskRunniglog'+ datetime.datetime.now().strftime("%Y%m%d") +'.log')
-    while True:
+    # 启动设备
+    start_device = ['5LM0216902001108', '5LM0216910000994', '5LM0216B03001264', 'APU0216408028484', 'DLQ0216630004610', 'E4J4C17405011422']
+    for deviceNum in start_device:
+        print(deviceNum)
         try:
-            consumer = ReceiveMessage()
-            consumer.receiveMessage()
+            os.popen('python3.7 ' + deviceNum + '.py  >> /root/airtest/log/Device/Runniglog' + datetime.datetime.now().strftime("%Y%m%d") + '.log')
+        except:
+            print(
+                '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~o(╥﹏╥)o 重启设备[' + deviceNum + ']异常 o(╥﹏╥)o~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             pass
-        except Exception as e:
-            print('接收消息异常：' + repr(e))
-            try:
-                DbContext = DbHelper()
-                DbContext.AddLog('',4,'接收消息异常：' + repr(e).replace("'","").replace("\"","").replace("\\",""))
-                del DbContext
-            except Exception as e:
-                continue
-            continue            
-    pass
+
 
 if __name__ == '__main__':
     main()
-    pass
+    # 检查设备是否运行
+    while True:
+        RunningCheck()

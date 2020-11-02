@@ -2,23 +2,26 @@ import time
 from datetime import datetime
 from Product.GetsData import get_drug, write_excel
 import pymysql
-conn = pymysql.connect(host='localhost', user='root', password='123456', port=3306, db='shopinfo', charset='utf8')
-cursor = conn.cursor()
+
 drug_list = []
 
 
 def get_goods(poco, device, stName, shopid):
+    conn = pymysql.connect(host='localhost', user='root', password='123456', port=3306, db='shopinfo', charset='utf8')
+    cursor = conn.cursor()
     drugname_list = get_drug()  # 获取药品名称
     for Drugname in drugname_list:
         drugid = Drugname[0]
         GetPartProduct(poco, device, Drugname[1], stName, shopid, drugid)
     poco('android.widget.ImageView').click()  # 返回药店详情页
-    write_excel(drug_list)
-    for drug in drug_list:
-        sql = 'insert into mt_drug_info (shop_name, Drugname, drug_price, drug_sale, sell_out, datetimes, flag)values (%s, %s, %s, %s, %s, %s, %s)'
-        cursor.execute(sql, (drug[0], drug[1], drug[2], drug[3], drug[4], drug[5], str(drug[6])))  # 将药品信息存到数据库
-    conn.commit()
-
+    try:
+        write_excel(drug_list)
+    except:
+        for drug in drug_list:
+            sql = 'insert into mt_drug_info (shop_name, Drugname, drug_price, drug_sale, sell_out, datetimes, flag)values (%s, %s, %s, %s, %s, %s, %s)'
+            cursor.execute(sql, (drug[0], drug[1], drug[2], drug[3], drug[4], drug[5], str(drug[6])))  # 将药品信息存到数据库
+        conn.commit()
+        conn.close()
 
 
 # 查询部分药品的数据
@@ -84,7 +87,6 @@ def GetPartProduct(poco, device, Drugname, stName, shopid, drugid):
             else:
                 print('提示：这家店' + Drugname + '药品不存在！')
                 not_exists(stName, Drugname, shopid, drugid)
-    conn.commit()
     # 点击清除药名
     poco("android:id/content").offspring("com.sankuai.meituan.takeoutnew:id/fl_mrn_container").child("android.widget.FrameLayout").child("android.widget.FrameLayout").child("android.view.ViewGroup").child("android.view.ViewGroup")[0].child("android.view.ViewGroup")[1].child("android.widget.ImageView").click()
 

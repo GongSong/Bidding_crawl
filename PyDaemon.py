@@ -18,7 +18,7 @@ try:
     if DeviceNum != '':
         AllowRun = True
 except Exception as e:
-    print('获取设备编号失败：'+ repr(e))
+    print('获取设备编号失败：' + repr(e))
     AllowRun = False
 while AllowRun:    
     isRunning = False
@@ -30,7 +30,7 @@ while AllowRun:
                     for item in pinfo['cmdline']:
                         if item == 'python3.7':
                             continue
-                        elif  item == DeviceNum+'.py':
+                        elif item == DeviceNum+'.py':
                             isRunning = True
                             break
                         else:
@@ -46,7 +46,7 @@ while AllowRun:
     if isRunning:    
         pass
     else:
-        #判断程序是否是自己停掉，否则就要重启
+        # 判断程序是否是自己停掉，否则就要重启
         DbContext = DbHelper()
         mode = DbContext.GetDeviceRunningMode(DeviceNum) 
         if mode == 1:
@@ -58,7 +58,8 @@ while AllowRun:
         elif mode == 5:
             taskList = []   
         elif mode == 6:
-            taskList =[]       
+            taskList = []
+
         if len(taskList) > 0:
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Reatarting~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')                       
             try:
