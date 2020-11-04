@@ -2,26 +2,30 @@ import time
 from datetime import datetime
 from Product.GetsData import get_drug, write_excel
 import pymysql
-
-drug_list = []
+conn = pymysql.connect(host='localhost', user='root', password='123456', port=3306, db='shopinfo', charset='utf8')
+cursor = conn.cursor()
 
 
 def get_goods(poco, device, stName, shopid):
-    conn = pymysql.connect(host='localhost', user='root', password='123456', port=3306, db='shopinfo', charset='utf8')
-    cursor = conn.cursor()
+    global drug_list
+    drug_list = []
     drugname_list = get_drug()  # 获取药品名称
     for Drugname in drugname_list:
         drugid = Drugname[0]
         GetPartProduct(poco, device, Drugname[1], stName, shopid, drugid)
     poco('android.widget.ImageView').click()  # 返回药店详情页
-    try:
-        write_excel(drug_list)
-    except:
+    isExists = write_excel(drug_list)
+    if isExists == 0:
         for drug in drug_list:
             sql = 'insert into mt_drug_info (shop_name, Drugname, drug_price, drug_sale, sell_out, datetimes, flag)values (%s, %s, %s, %s, %s, %s, %s)'
             cursor.execute(sql, (drug[0], drug[1], drug[2], drug[3], drug[4], drug[5], str(drug[6])))  # 将药品信息存到数据库
         conn.commit()
-        conn.close()
+    else:
+        for drug in drug_list:
+            flag = drug[-1]
+            sql = 'update mt_drug_info set shop_name={}, Drugname={}, drug_price={}, drug_sale={}, sell_out={}, datetimes={} where flag={}'.format('"'+drug[0]+'"',  '"'+drug[1]+'"',  '"'+drug[2]+'"',  '"'+drug[3]+'"',  '"'+drug[4]+'"',  '"'+drug[5]+'"', '"'+flag+'"')
+            cursor.execute(sql)
+            conn.commit()
 
 
 # 查询部分药品的数据

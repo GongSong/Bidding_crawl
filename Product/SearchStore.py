@@ -62,7 +62,7 @@ def getStore(IsAddress, poco, IsAllClassifyInput, StoreName, device, shopid):
     if not IsAddress:
         return False
     try:
-        poco.swipe([0.5, 0.6], [0.5, 0.5], duration=0.3)
+        poco.swipe([0.5, 0.6], [0.5, 0.4], duration=0.3)
         time.sleep(3)
         if poco(text="买药").exists():
             poco(text="买药").wait(waitTime).click([0, 0])

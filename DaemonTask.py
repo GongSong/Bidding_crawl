@@ -53,4 +53,3 @@ def RunningCheck():
                     DbContext.AddLog(deviceNum, 3, '重启设备[' + deviceNum + ']异常 ' + repr(e).replace("'", ""))
                     pass
 
-RunningCheck()

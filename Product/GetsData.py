@@ -4,34 +4,43 @@ from Send_Message import send_email, send_text, send_T1, send_T2, send_T3T4, sen
 from openpyxl import Workbook
 from openpyxl.styles import Font
 import time
+import random
+from datetime import datetime
 conn = pymysql.connect(host='localhost', user='root', password='123456', port=3306, db='shopinfo', charset='utf8')
 cursor = conn.cursor()
+
 
 '''
 从数据库获取竞争药店状态码为0的店，
 若状态码为0和为1的店的数量为零，就将店家的状态吗更新为0
+若状态码为3则为停掉的设备重新爬取的店
 '''
 def get_shopName():
-    global task
-    task = []
+    time.sleep(random.randint(1, 10))
     sql = 'select id, storename, store_addr, city from mt_com_drugstore where status_code=0'
     cursor.execute(sql)
     id_name_addr_city = cursor.fetchone()
     conn.commit()
     if id_name_addr_city == None:
+        time.sleep(random.randint(1, 10))
         sql = 'select id, storename, store_addr, city from mt_com_drugstore where status_code=1'
         cursor.execute(sql)
         status_code1 = cursor.fetchone()
         conn.commit()
         if status_code1 == None:
+            # 状态全修改为0
             crawl_status_update()
-        else:
-            time.sleep(3000)
-            sql = 'update mt_com_drugstore set status_code=0 where status_code=1'
+            # 返回数据库第一个为0的店
+            sql = 'select id, storename, store_addr, city from mt_com_drugstore where status_code=0'
             cursor.execute(sql)
+            id_name_addr_city = cursor.fetchone()
             conn.commit()
+            return id_name_addr_city, 0
+        else:
+            # time.sleep(random.randint(110, 250))
+            return status_code1, 3
     else:
-        return id_name_addr_city
+        return id_name_addr_city, 1
 
 
 # 更新任务状态
@@ -47,20 +56,6 @@ def crawl_status_update():
     cursor.execute(sql)
     conn.commit()
 
-# # 获取最近一条执行了但是没有回写数据库的任务执行时间
-# def get_last_time():
-#     sql = 'select storename from mt_com_drugstore where status_code=1'
-#     cursor.execute(sql)
-#     storename = cursor.fetchone()
-#     conn.commit()
-#     if storename in task:
-#         sql = 'update mt_com_drugstore set status_code=0 where storename={}'.format('"'+storename+'"')
-#         cursor.execute(sql)
-#         conn.commit()
-#         task.remove(storename)
-#     else:
-#         pass
-
 
 # 从数据库获取药品数据
 def get_drug():
@@ -69,9 +64,6 @@ def get_drug():
     drugs = cursor.fetchall()
     conn.commit()
     return drugs
-
-
-
 
 
 # 将我店竟店数据写入excel
@@ -85,16 +77,16 @@ def write_excel(drug_list):
     sheet.append(row=row)
     a = 0
     for index, drug in enumerate(drug_list):
-        Drugname = drug[1]
+        shop_name = drug[0]
         flag = drug[-1]
-        # 查询店名相同的的商店药品数据
-        sql = 'select * from mt_drug_info where Drugname={}'.format('"' + Drugname + '"')
-        print(sql)
+        # 查询店名是不是已存在
+        sql = 'select * from mt_drug_info where shop_name={}'.format('"' + shop_name + '"')
         cursor.execute(sql)
         pre_drug_list = cursor.fetchall()
-        print(pre_drug_list)
         conn.commit()
-        if len(pre_drug_list) != 0:
+        if len(pre_drug_list) == 0:
+            return 0
+        else:
             for pre_drug in pre_drug_list:
                 pre_flag = pre_drug[-1]
                 if flag == pre_flag:
@@ -130,23 +122,24 @@ def write_excel(drug_list):
                             tips = '比昨天高' + str(abs(round(spread, 5))) + '元'
                             row = [index, month, date, pre_times, Drugname, shopname, pre_price, pre_sale, pre_sellout, times, price, sale, sellout, spread, tips]
                             sheet.append(row=row)
+
                         elif spread < 0:
                             a += 1
                             tips = '比昨天低' + str(abs(round(spread, 5))) + '元'
                             row = [index, month, date, pre_times, Drugname, shopname, pre_price, pre_sale, pre_sellout, times, price, sale, sellout, spread, tips]
                             sheet.append(row=row)
-                        # else:
-                        #     tips = '价格相等！'
-                    content = '竟店价格变动：' + date + ' ' + times + ' ' + shopname
-                    file = '/root/Bidding_crawl/bidding_excel/' + flag + '价格对比.xlsx'
-                    print(file)
-                    wb.save(file)
-                    print('表生成成功！')
-                    if a != 0:
-                        link_url = set_file(file)  # 获取链接
-                        get_person(shopname, content, link_url)
-                    break
-        else:
-            print(Drugname+'：上次的数据不存在！')
-        break
+
+    datetime_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    date = datetime_now.split()[0]
+    content = '竟店价格变动：' + date + '-' + shop_name
+    file = 'D:\\spider\\Bidding_crawl\\bidding_excel\\' + str(shop_name) + '价格对比.xlsx'
+    wb.save(file)
+    print('表生成成功！')
+    if a != 0:
+
+        print('---------------------------')
+        link_url = set_file(file)  # 获取链接
+        get_person(shop_name, content, link_url)
+    return 1
+
 
