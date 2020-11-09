@@ -119,26 +119,24 @@ def write_excel(drug_list):
                         spread = float(price) - float(pre_price)  # 价差，这次比上次
                         if spread > 0:
                             a += 1
-                            tips = '比昨天高' + str(abs(round(spread, 5))) + '元'
+                            tips = '比上次高' + str(abs(round(spread, 5))) + '元'
                             row = [index, month, date, pre_times, Drugname, shopname, pre_price, pre_sale, pre_sellout, times, price, sale, sellout, spread, tips]
                             sheet.append(row=row)
-
                         elif spread < 0:
                             a += 1
-                            tips = '比昨天低' + str(abs(round(spread, 5))) + '元'
+                            tips = '比上次低' + str(abs(round(spread, 5))) + '元'
                             row = [index, month, date, pre_times, Drugname, shopname, pre_price, pre_sale, pre_sellout, times, price, sale, sellout, spread, tips]
                             sheet.append(row=row)
-
-    datetime_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    date = datetime_now.split()[0]
-    content = '竟店价格变动：' + date + '-' + shop_name
-    file = 'D:\\spider\\Bidding_crawl\\bidding_excel\\' + str(shop_name) + '价格对比.xlsx'
+    time_stamp = str(round(time.time() * 1000))
+    file = 'D:\\spider\\Bidding_crawl\\bidding_excel\\' + time_stamp + '-' + str(shop_name) + '价格对比.xlsx'
     wb.save(file)
     print('表生成成功！')
     if a != 0:
-
-        print('---------------------------')
-        link_url = set_file(file)  # 获取链接
+        data_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        content = '竟店价格变动：' +data_now+ str(shop_name)
+        # 获取链接
+        link_url = set_file(file)
+        # 发送链接
         get_person(shop_name, content, link_url)
     return 1
 

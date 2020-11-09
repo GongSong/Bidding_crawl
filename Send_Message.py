@@ -189,7 +189,7 @@ def send_email(date, flag,  we_shopname, other_shopname):
 
 # 上传excel文件
 def upload(filename):
-    sql = 'select Token from get_token'
+    sql = 'select Token from mt_gettoken'
     cursor.execute(sql)
     token = cursor.fetchone()[0]
     conn.commit()
@@ -211,7 +211,7 @@ def upload(filename):
 # 设置文件存储时长
 def set_file(filename):
     key = upload(filename)
-    sql = 'select Token from get_token'
+    sql = 'select Token from mt_gettoken'
     cursor.execute(sql)
     token = cursor.fetchone()[0]
     url = "http://fileshare.arkodata.cn/set"
@@ -229,7 +229,8 @@ def set_file(filename):
         return link_url
     except:
         pass
-
+# set_file('D:\\spider\\Bidding_crawl\\bidding_excel\\1604555724588-张仲景大药房洛阳王城大道店.xlsx')
+#
 
 # 获取人员信息，发送消息到各人员的群中
 def get_person(other_shopname, content, link_url):
@@ -265,3 +266,7 @@ def get_person(other_shopname, content, link_url):
     if a == 0:
         content1 = '监控到：'+other_shopname+'在storeList表中没有找到对应的店名'
         print(content1)
+
+set_file('D:\\spider\\Bidding_crawl\\bidding_excel\\1604639467621-海王星辰广州新港西店.xlsx')
+
+

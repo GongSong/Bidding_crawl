@@ -14,7 +14,7 @@ from Product.SearchStore import SearchCatchStore, search_store
 import datetime
 import time
 from apscheduler.schedulers.blocking import BlockingScheduler
-from Product.GetsData import get_shopName, write_excel, crawled_status_code, crawling_status_code
+from Product.GetsData import get_shopName, write_excel, crawl_status_code
 
 
 def main(DeviceNum):
@@ -86,17 +86,23 @@ def main(DeviceNum):
                 taskList = DbContext.GetDeviceTaskByMode3()
             elif mode == 5:
                 IsRunning = False
-            elif mode == 6:  # 根据店名爬取
+            elif mode == 6:
+                # 根据店名爬取
                 while True:
-                    id_name_addr_city = get_shopName()
+                    data = get_shopName()
+                    id_name_addr_city = data[0]
                     shopid = id_name_addr_city[0]
                     storeName = id_name_addr_city[1]
                     addr = id_name_addr_city[2]
                     city = (id_name_addr_city[3])[:-1]
-                    crawling_status_code(storeName)
+                    print(storeName, addr, city)
+                    if data[1] == 3:
+                        crawl_status_code(storeName, 3)
+                    else:
+                        crawl_status_code(storeName, 1)
                     search_store(storeName, poco, device, addr, city, shopid)
                     BackHomePage(poco, DbContext, DeviceNum, device)
-                    crawled_status_code(storeName)
+                    crawl_status_code(storeName, 2)
 
             if(len(taskList) == 1):
                 # 更新任务为运行中

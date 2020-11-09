@@ -19,11 +19,13 @@ def get_goods(poco, device, stName, shopid):
         for drug in drug_list:
             sql = 'insert into mt_drug_info (shop_name, Drugname, drug_price, drug_sale, sell_out, datetimes, flag)values (%s, %s, %s, %s, %s, %s, %s)'
             cursor.execute(sql, (drug[0], drug[1], drug[2], drug[3], drug[4], drug[5], str(drug[6])))  # 将药品信息存到数据库
+            print('写入------------------------')
         conn.commit()
     else:
         for drug in drug_list:
             flag = drug[-1]
             sql = 'update mt_drug_info set shop_name={}, Drugname={}, drug_price={}, drug_sale={}, sell_out={}, datetimes={} where flag={}'.format('"'+drug[0]+'"',  '"'+drug[1]+'"',  '"'+drug[2]+'"',  '"'+drug[3]+'"',  '"'+drug[4]+'"',  '"'+drug[5]+'"', '"'+flag+'"')
+            print('更新------------------------')
             cursor.execute(sql)
             conn.commit()
 

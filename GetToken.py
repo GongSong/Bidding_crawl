@@ -22,9 +22,11 @@ def get_token():
     conn.commit()
     conn.close()
 
+
 def job():
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     get_token()
+
 
 scheduler = BlockingScheduler()
 scheduler.add_job(job, 'cron', minute='*/45')   # 每隔45分种运行一次
